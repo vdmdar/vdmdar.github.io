@@ -1,0 +1,115 @@
+<html>
+
+<head>
+<title>Push</title>
+
+<script language="javascript">
+
+'use strict';
+
+const merchantId = "9QJB2QCPNROIq1QQ5Y"
+const productsFilterUrl = "https://qa.darbazar.kz/api/v3/products/filter"
+const createBasketUrl = "https://qa.darbazar.kz/api/v3/baskets/mset"
+const createOrderUrl = "https://qa.darbazar.kz/api/v3/orders/"
+const getBasketUrl = "https://qa.darbazar.kz/api/v3/baskets/"
+
+const filterParams = {
+    "from" : 0,
+    "size" : 1,
+    "scope" : "darvis",
+    "merchant_id" : merchantId,
+}
+
+async function push() {
+    let products = await getProducts()
+    // console.log(products)
+    let basket = constructBasket(products)
+    // console.log(basket)
+    let postBasket = await createBasket(basket)
+    // console.log(newBasket)
+    let id = postBasket.basket_id
+    // console.log(id)
+    let newBasket = await getBasket(id)
+    // console.log(newBasket)
+    let newOrder = constructOrder(id)
+    let order = await createOrder(newOrder)
+    console.log(order)
+}
+
+function postRequest(url, params) {
+    return fetch(url, {
+        method: 'post',
+        body: JSON.stringify(params)
+    }).then(function(response) {
+        return response.json()
+    })
+}
+
+function getProducts() {
+    return postRequest(productsFilterUrl, filterParams)
+}
+
+function createBasket(basket) {
+    return postRequest(createBasketUrl, basket)
+}
+
+function getBasket(id) {
+    let url = getBasketUrl + id
+    return postRequest(url)
+}
+
+function createOrder(order) {
+    return postRequest(createOrderUrl, order)
+}
+
+function constructBasket(json) {
+    let product = json.products[0]
+    let sku = product.skus[0]
+    let basket = {
+        "scope" : "darvis",
+        "basket_items" : [
+            {
+              "item_type" : "product",
+              "quantity" : 13,
+              "item_id" : product.uid,
+              "merchant_ids" : [merchantId],
+              "product_variation" : sku.product_param[0].params_value_title,
+              "sub_item_id" : sku.uid
+            }
+        ],
+         "user_id" : merchantId
+    }
+
+    return basket
+}
+
+function constructOrder(basketId) {
+    let order = {
+        "name" : "Samuel L ASD",
+        "address" : "ул. Пушкина",
+        "house_number" : "дом Колотушкина",
+        "flat_number" : "кв 13",
+        "mobile" : "+7(777)666-14-88",
+        "pay_types" : "cash",
+        "owner" : merchantId,
+        "comment": "Hello from NodeJS",
+        "pay_title" : "оплата наличными",
+        "own_type" : "merchant",
+        "basket_id" : basketId
+    }
+
+    return order
+}
+
+</script>
+
+</head>
+
+<body>
+
+<input type="button" value="Click Me" onclick="push()" />
+
+</body>
+
+</html>
+
