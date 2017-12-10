@@ -4,33 +4,41 @@
 <title>Push</title>
 
 <script language="javascript">
-
 'use strict';
 
-const merchantId = "9QJB2QCPNROIq1QQ5Y"
 const productsFilterUrl = "https://qa.darbazar.kz/api/v3/products/filter"
 const createBasketUrl = "https://qa.darbazar.kz/api/v3/baskets/mset"
 const createOrderUrl = "https://qa.darbazar.kz/api/v3/orders/"
 const getBasketUrl = "https://qa.darbazar.kz/api/v3/baskets/"
 
-const filterParams = {
-    "from" : 0,
-    "size" : 1,
-    "scope" : "darvis",
-    "merchant_id" : merchantId,
+let merchantId = ""
+let customerName = ""
+let customerAddress = ""
+let customerNumber = ""
+let customerComment = ""
+
+function start() {
+	merchantId = document.getElementById('idField').value
+	customerName = document.getElementById('nameField').value
+	customerAddress = document.getElementById('addressField').value
+	customerNumber = document.getElementById('mobileField').value
+	customerComment = document.getElementById('commentField').value
+	push()
 }
 
 async function push() {
+	console.log("ID:")
+	console.log(merchantId)
     let products = await getProducts()
-    // console.log(products)
+    console.log(products)
     let basket = constructBasket(products)
-    // console.log(basket)
+    console.log(basket)
     let postBasket = await createBasket(basket)
-    // console.log(newBasket)
+    console.log(postBasket)
     let id = postBasket.basket_id
-    // console.log(id)
+    console.log(id)
     let newBasket = await getBasket(id)
-    // console.log(newBasket)
+    console.log(newBasket)
     let newOrder = constructOrder(id)
     let order = await createOrder(newOrder)
     console.log(order)
@@ -46,7 +54,8 @@ function postRequest(url, params) {
 }
 
 function getProducts() {
-    return postRequest(productsFilterUrl, filterParams)
+	let params = constructProductFilterParams()
+    return postRequest(productsFilterUrl, params)
 }
 
 function createBasket(basket) {
@@ -60,6 +69,16 @@ function getBasket(id) {
 
 function createOrder(order) {
     return postRequest(createOrderUrl, order)
+}
+
+function constructProductFilterParams() {
+	let filterParams = {
+		"from" : 0,
+		"size" : 1,
+		"scope" : "darvis",
+		"merchant_id" : merchantId,
+	}
+	return filterParams
 }
 
 function constructBasket(json) {
@@ -85,14 +104,12 @@ function constructBasket(json) {
 
 function constructOrder(basketId) {
     let order = {
-        "name" : "Samuel L ASD",
-        "address" : "ул. Пушкина",
-        "house_number" : "дом Колотушкина",
-        "flat_number" : "кв 13",
-        "mobile" : "+7(777)666-14-88",
+        "name" : customerName,
+        "address" : customerAddress,
+        "mobile" : customerNumber,
         "pay_types" : "cash",
         "owner" : merchantId,
-        "comment": "Hello from NodeJS",
+        "comment": customerComment,
         "pay_title" : "оплата наличными",
         "own_type" : "merchant",
         "basket_id" : basketId
@@ -106,9 +123,18 @@ function constructOrder(basketId) {
 </head>
 
 <body>
-
-<input type="button" value="Click Me" onclick="push()" />
-
+  <br>ID:<br>
+  <input type="text", id = "idField">
+  <br>Name:<br>
+  <input type="text", id = "nameField">
+  <br>Address:<br>
+  <input type="text", id = "addressField">
+  <br>Mobile number:<br>
+  <input type="text", id = "mobileField">
+   <br>Comment:<br>
+  <input type="text", id = "commentField">
+  <br>
+  <input type="submit" value="Submit" onclick="start()">
 </body>
 
 </html>
