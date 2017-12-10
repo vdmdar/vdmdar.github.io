@@ -27,8 +27,6 @@ function start() {
 }
 
 async function push() {
-	console.log("ID:")
-	console.log(merchantId)
     let products = await getProducts()
     console.log(products)
     let basket = constructBasket(products)
@@ -42,6 +40,7 @@ async function push() {
     let newOrder = constructOrder(id)
     let order = await createOrder(newOrder)
     console.log(order)
+    alert("Order sent")
 }
 
 function postRequest(url, params) {
@@ -49,7 +48,13 @@ function postRequest(url, params) {
         method: 'post',
         body: JSON.stringify(params)
     }).then(function(response) {
+        if (!response.ok) {
+          return reject()
+        }
+
         return response.json()
+    }).catch(function(error) {
+        alert("Error. See logs")
     })
 }
 
